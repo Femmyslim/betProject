@@ -20,6 +20,37 @@ const connection = mysql.createConnection({
 
 
 
+app.put("/update", (req,res) =>{
+    const bet_table = [
+        {
+        bet_id: 12345,
+        bet_name: 'betray',
+        bet_description: 'firstdrawn set',
+        bet_amount: $15
+       },
+       {
+        bet_id: 12985,
+        bet_name: 'betflu',
+        bet_description: 'firstddouble set',
+        bet_amount: $15
+       },
+       {
+        bet_id: 23345,
+        bet_name: 'betblue',
+        bet_description: 'doublechance set',
+        bet_amount: $15
+       },
+]   
+
+connection.query(
+    `INSERT INTO bet_table(bet_id, bet_name, bet description, bet_amount) 
+    VALUES('${bet_id}','${bet_name}','${bet_description},'${bet_amount}')`),
+
+})
+
+
+
+
 app.post("/create/customer", (req, res) =>{
     const customer_id = uuidv4
 
@@ -74,6 +105,19 @@ app.get("/punter/:bet_id", (req, res) =>{
         `INSERT INTO punter(customer_id, bet_id, bet_amount) 
         VALUES('${customer_id}','${bet_id}','${bet_amount})'`,
         (err, results, fields) => {
+            if (err) {
+                throw new Error("This is on us, please try later")
+            }
+
+
+            res.status(201).json({
+                message: "Account succesfully created",
+                data: {
+                    customer_id,
+                    bet_id,
+                    bet_amount,
+                }
+            })
 
         }
         
