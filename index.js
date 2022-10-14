@@ -5,7 +5,7 @@ const mysql = require('mysql2')
 const Joi = require('joi')
 const { v4: uuidv4 } = require('uuid')
 const app = express()
-const port =1002
+const port =process.env.APP_PORT
 const customerRoutes = require('./routes/customer.route')
 
 
@@ -57,7 +57,7 @@ app.put("/update", (req,res) =>{
    try {
     connection.query(
         `INSERT INTO bet_table(bet_id, bet_name, bet_description, bet_amount) 
-        VALUEs('${bet_id}','${bet_name}','${bet_description}','${bet_amount}')`,
+        VALUES('${bet_id}','${bet_name}','${bet_description}','${bet_amount}')`,
         (err, results, fields) => {
     
             if(err){
@@ -86,10 +86,6 @@ app.put("/update", (req,res) =>{
 
 app.post("/create/customer", (req, res) =>{
 
-    const {customer_firstname,customer_lastname,customer_email,customer_password} = req.body
-
-    const customer_id = uuidv4()
-
     const schemaCustomer = Joi.object({ 
         customer_firstname: Joi.string().min(4).max(30).required(),
         customer_lastname: Joi.string().min(4).max(30).required(),
@@ -100,12 +96,16 @@ app.post("/create/customer", (req, res) =>{
     const { error, value } = schemaCustomer.validate(req.body)
     console.log("i got here", error)
 
-    if (error) {
+    if (error !=undefined) {
         res.status(400).json({
             status: false,
-            message: error.message
+            message: error
         })    
     }
+
+    const {customer_firstname,customer_lastname,customer_email,customer_password} = req.body
+
+    const customer_id = uuidv4()
 
     try{
 
@@ -125,7 +125,7 @@ app.post("/create/customer", (req, res) =>{
 } catch (e) {
     res.status(400).send({ 
         status: false,
-        message: e.message || 'validation error'
+        message: e.message || 'validation error',
     })    
   }
 }) 
@@ -138,46 +138,51 @@ app.post("/create/customer", (req, res) =>{
 app.get("/punter/:bet_id", (req, res) =>{
 
     const {bet_id} = req.params
-    // let count = 1
-    // for(let i = 0 ; i <= 10; i++){
-    //     if(){
-    //         count += 
-    //     }
-    // }
-
-    if(!bet_id || punter.length>10){
-        res.status(404).json({
-            message: `Betname unvailable`,
-            data: bet_table
-        })
-    }
-        res.status(200).json({
-            message: `Betname ${bet_id} available`,
-            data: bet_table
-        })
-
-    connection.query(
-        `INSERT INTO punter(customer_id, bet_id, bet_amount) 
-        VALUES('${customer_id}','${bet_id}','${bet_amount})'`,
-        (err, results, fields) => {
-            if (err) {
-                throw new Error("This is on us, please try later")
-            }
-
-
-            res.status(201).json({
-                message: "Account succesfully created",
-                data: {
-                    customer_id,
-                    bet_id,
-                    bet_amount,
-                }
+    const maxPlayer = []
+    
+        if(bet_id[bet_id.length-1] <= 10){
+            maxPlayer += punter.bet_id[bet_id.length-1] 
+            res.status(200).json({
+               message: `${bet_id} available for bet`
             })
+        }else {
+            res.status(503).json({
+                message: `${bet_id} unavailable for bet`
+             })
+        }
 
+        try {
+            connection.query(
+                `INSERT INTO punter(customer_id, bet_id, bet_amount) 
+                VALUES('${customer_id}','${bet_id}','${bet_amount})'`,
+                (err, results, fields) => {
+                    if (err) {
+                        throw new Error("This is on us, please try later")
+                    }
+        
+        
+                    res.status(201).json({
+                        message: "Account succesfully created",
+                        data: {
+                            customer_id,
+                            bet_id,
+                            bet_amount,
+                        }
+                    })
+        
+                }
+                
+                
+            )
+
+        } catch (error) {
+            res.status(400).send({ 
+                status: false,
+                message: e.message || 'validation error',
+            })     
         }
         
-        
-    )
+    
 })
     
     

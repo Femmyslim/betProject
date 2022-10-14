@@ -1,11 +1,44 @@
+const Joi = require('joi')
+const { v4: uuidv4 } = require('uuid')
+const { newUserQuery, betCreationQuery, afterBet_idConfirmation } = require('../models/query')
+const {validateCreateUser} = require("../validation/validations")
 
 
+const createBet = (req,res) =>{
 
-const createUsers = (req, res) =>{
+    const {bet_id,bet_name,bet_description,bet_amount} = req.body
+    
+        const data = [
+            // {
+            // bet_id_1: 12345,
+            // bet_name: 'betray',
+            // bet_description: 'firstdrawn set',
+            // bet_amount: $15
+            // },
+            {
+            bet_id: bet_id,
+            bet_name: bet_name,
+            bet_description: bet_description,
+            bet_amount: bet_amount
+            }
 
-    const {customer_firstname,customer_lastname,customer_email,customer_password} = req.body
+            // {
+            // bet_id_2: 12985,
+            // bet_name: 'betflu',
+            // bet_description: 'firstddouble set',
+            // bet_amount: 15000
+            // },
 
-    const customer_id = uuidv4()
+            // {
+            // bet_id_3: 23345,
+            // bet_name: 'betblue',
+            // bet_description: 'doublechance set',
+            // bet_amount: 10000
+            // },
+        ]  
+}   
+
+const createCustomer = (req, res) =>{
 
     const schemaCustomer = Joi.object({ 
         customer_firstname: Joi.string().min(4).max(30).required(),
@@ -17,32 +50,35 @@ const createUsers = (req, res) =>{
     const { error, value } = schemaCustomer.validate(req.body)
     console.log("i got here", error)
 
-    if (error) {
+    if (error !=undefined) {
         res.status(400).json({
             status: false,
-            message: error.message
+            message: error
         })    
     }
 
-    try{
+    const {customer_firstname,customer_lastname,customer_email,customer_password} = req.body
 
-    connection.query(
-    `INSERT INTO customer_system(customer_id, customer_firstname, customer_lastname, customer_email) 
-    VALUE('${customer_id}','${customer_firstname}','${customer_lastname}','${customer_email}','${customer_password}')`,
-    (err, results, fields) => {
-    if(err) {
-        throw new Error('connection error, try again')
-     }
-    }, 
-        res.status(201).json({
-            status: true,
-            message: 'New user created succesfully'
-        })
-  )
-} catch (e) {
-    res.status(400).send({ 
-        status: false,
-        message: e.message || 'validation error'
-    })    
-  }
-}) 
+    const customer_id = uuidv4()
+}
+
+const bet_idConfirmation = (req, res) =>{
+
+    const {bet_id} = req.params
+    const maxPlayer = []
+    
+        if(bet_id[bet_id.length-1] <= 10){
+            maxPlayer += punter.bet_id[bet_id.length-1] 
+            res.status(200).json({
+               message: `${bet_id} available for bet`
+            })
+        }else {
+            res.status(503).json({
+                message: `${bet_id} unavailable for bet`
+             })
+        }
+    }        
+
+
+
+module.export = {createBet, createCustomer, bet_idConfirmation} ; 
