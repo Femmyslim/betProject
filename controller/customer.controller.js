@@ -1,65 +1,84 @@
+const e = require('express')
 const Joi = require('joi')
 const { v4: uuidv4 } = require('uuid')
-const { newUserQuery, betCreationQuery, afterBet_idConfirmation } = require('../models/query')
+const { newUserQuery, betCreationQuery, bet_idConfirmation, getAllBetId, userEmailConfirmation } = require('../models/query')
 const {validateCreateUser} = require("../validation/validations")
 
 
 const createBet = (req,res) =>{
-
-    const {bet_id,bet_name,bet_description,bet_amount} = req.body
     
         const data = [
-            // {
-            // bet_id_1: 12345,
-            // bet_name: 'betray',
-            // bet_description: 'firstdrawn set',
-            // bet_amount: $15
-            // },
+        
             {
-            bet_id: bet_id,
-            bet_name: bet_name,
-            bet_description: bet_description,
-            bet_amount: bet_amount
-            }
+            bet_id: "bet_id",
+            bet_name: "bet_name",
+            bet_description: "bet_description",
+            bet_amount: "bet_amount"
+            },
 
-            // {
-            // bet_id_2: 12985,
-            // bet_name: 'betflu',
-            // bet_description: 'firstddouble set',
-            // bet_amount: 15000
-            // },
+            {
+            bet_id_2: "12985",
+            bet_name: "betflu",
+            bet_description: "firstddouble set",
+            bet_amount: 15000
+            },
 
-            // {
-            // bet_id_3: 23345,
-            // bet_name: 'betblue',
-            // bet_description: 'doublechance set',
-            // bet_amount: 10000
-            // },
         ]  
+
+        const {bet_id,bet_name,bet_description,bet_amount} = req.body
+        if( !bet_id || !bet_name, bet_description, bet_amount){
+            res.status(400).json({
+                message: 'All fields required'
+            })
+        }
+    
+        try {
+            bet_idConfirmation(bet_id)
+            .then(responseFromConfirmBetAvailability => {
+                if(responseFromConfirmBetAvailability.length > 0){
+                    throw new error ("Bet id exist")
+                }
+                return betCreationQuery(bet_id, bet_name, bet_description, bet_amount)
+            })
+        } catch (error) {
+            res.status(400).json({
+                status: false,
+                message: e.message
+            })
+        }
+
 }   
 
 const createCustomer = (req, res) =>{
 
-    const schemaCustomer = Joi.object({ 
-        customer_firstname: Joi.string().min(4).max(30).required(),
-        customer_lastname: Joi.string().min(4).max(30).required(),
-        customer_email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }),
-        customer_password: Joi.string()
-    })
-
-    const { error, value } = schemaCustomer.validate(req.body)
-    console.log("i got here", error)
-
-    if (error !=undefined) {
+    const customer_id = uuidv4()
+    const {customer_firstname,customer_lastname,customer_email,customer_password} = req.body
+    if( !customer_firstname || !customer_lastname || !customer_email || !customer_paasword){
         res.status(400).json({
-            status: false,
-            message: error
-        })    
+            message: " All fields required"
+        })
     }
 
-    const {customer_firstname,customer_lastname,customer_email,customer_password} = req.body
+    try {
+        userEmailConfirmation(email)
+        .then(responseFromCheckEmail =>{
+            if(responseFromCheckEmail.length > 0){
+                throw new error ('email exist')
+            }
+            return newUserQuery(customer_id, customer_firstname, customer_lastname, customer_email, customer_password)
+        })
+        .then(newUserCreationResult => {
+            res.status(200).json({
+                message: 'Account created successfully'
+            })
+        })
+    } catch (error) {
+        res.status(400).json({
+            status: false,
+            message: e.message
+        })
+    }
 
-    const customer_id = uuidv4()
 }
 
 const bet_idConfirmation = (req, res) =>{

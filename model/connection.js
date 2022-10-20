@@ -1,6 +1,5 @@
 require('dotenv').config()
-const mysql = require('mysql2')
-const port =process.env.APP_PORT
+const mysql = require('mysql2') 
 
 
 

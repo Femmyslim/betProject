@@ -1,23 +1,16 @@
 require('dotenv').config()
 const express = require('express')
 const bodyParser = require('body-parser')
-const mysql = require('mysql2')
-const Joi = require('joi')
 const { v4: uuidv4 } = require('uuid')
 const app = express()
 const port =process.env.APP_PORT
-const customerRoutes = require('./routes/customer.route')
+// const customerRoutes = require('./routes/customer.route')
+const { router } = require('./routes/customer.route')
 
 
 app.use(bodyParser.json())
+app.use(router)
 
-
-const connection = mysql.createConnection({
-    localhost: process.env.DATABASE_HOST,
-    user: process.env.DATABASE_USER,
-    password: process.env.DATABASE_PASSWORD,
-    database: process.env.DATABASE_NAME
-});
 
 
 
@@ -86,12 +79,6 @@ app.put("/update", (req,res) =>{
 
 app.post("/create/customer", (req, res) =>{
 
-    const schemaCustomer = Joi.object({ 
-        customer_firstname: Joi.string().min(4).max(30).required(),
-        customer_lastname: Joi.string().min(4).max(30).required(),
-        customer_email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }),
-        customer_password: Joi.string()
-    })
 
     const { error, value } = schemaCustomer.validate(req.body)
     console.log("i got here", error)
